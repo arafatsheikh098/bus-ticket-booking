@@ -177,8 +177,8 @@ async def test_late_payment_after_seat_was_taken_is_refunded(client, pool, provi
     assert (await send_webhook(client, provider, ref)).json()["result"] == "refund"
     status = await hold_status(client, hold["id"])
     assert status["status"] == "failed"
-    assert status["payment"] == {"status": "refunded", "checkout_url": url,
-                                 "refund_reason": "seats_unavailable"}
+    assert status["payment"] == {"status": "refunded", "amount_bdt": 2 * trip["fare"],
+                                 "checkout_url": url, "refund_reason": "seats_unavailable"}
     assert provider.payments[ref]["status"] == "refunded"
     seats = {s["seat_no"]: s["status"] for s in
              (await client.get(f"/api/trips/{trip['id']}")).json()["seats"]}

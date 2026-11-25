@@ -35,6 +35,7 @@ def hold_view(hold: asyncpg.Record, payment: asyncpg.Record | None = None,
         "expires_at": hold["expires_at"].isoformat(),
         "payment": {
             "status": payment["status"],
+            "amount_bdt": payment["amount_bdt"],
             "checkout_url": payment["checkout_url"],
             "refund_reason": payment["refund_reason"],
         } if payment else None,
