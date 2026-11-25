@@ -131,23 +131,28 @@ async def main(users: int, decline_rate: float, late_rate: float, drop_rate: flo
               f"{sum(p == 'decline' for p in plan.values())} decline, {len(late)} pay after deadline")
 
         if late:
-            # Late payers wait past their deadline. Meanwhile a rival grabs the first late
-            # payer's seats, so that payment must end in a refund, not a double booking.
+            # The first late payer waits until just past their deadline. A rival grabs their
+            # seats in that moment and then the payment lands: it must end in a refund, never
+            # a double booking. The other late payers pay a few seconds later, by which time
+            # reconciliation has usually cancelled their payment first. Both endings are valid.
             conn = await asyncpg.connect(DB)
             try:
-                deadline = await conn.fetchval(
-                    "SELECT max(expires_at) FROM holds WHERE id = ANY($1::uuid[])",
-                    [winners[i]["id"] for i in late])
+                deadlines = {i: await conn.fetchval("SELECT expires_at FROM holds WHERE id = $1::uuid",
+                                                    winners[i]["id"]) for i in late}
             finally:
                 await conn.close()
-            wait = max(0.0, (deadline.timestamp() - time.time())) + 0.5
-            print(f"  waiting {wait:.0f}s for late payers' deadlines to pass…")
+            first = late[0]
+            wait = max(0.0, deadlines[first].timestamp() - time.time()) + 0.1
+            print(f"  waiting {wait:.0f}s for the first late payer's deadline to pass…")
             await asyncio.sleep(wait)
             rival = await client.put(f"{API}/api/trips/{trip['id']}/hold",
-                                     json={"seats": winners[late[0]]["seats"]},
+                                     json={"seats": winners[first]["seats"]},
                                      headers={"X-Session-Id": "rival-" + uuid.uuid4().hex[:12]})
-            print(f"  rival grabs {winners[late[0]]['seats']} after deadline: HTTP {rival.status_code}")
-            for i in late:
+            print(f"  rival grabs {winners[first]['seats']} right after the deadline: "
+                  f"HTTP {rival.status_code}")
+            await fp.post(f"/v1/payments/{refs[first]}/simulate", params={"outcome": "succeeded"})
+            await asyncio.sleep(max(0.0, max(d.timestamp() for d in deadlines.values()) - time.time()) + 3)
+            for i in late[1:]:
                 await fp.post(f"/v1/payments/{refs[i]}/simulate", params={"outcome": "succeeded"})
 
         # ----- Phase 3: settle and verify ----------------------------------------------
