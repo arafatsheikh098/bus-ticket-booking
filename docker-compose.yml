@@ -8,7 +8,7 @@ services:
       POSTGRES_PASSWORD: aashon
       POSTGRES_DB: aashon
     ports:
-      - "5433:5432"
+      - "127.0.0.1:5433:5432"   # Only this machine can reach the database.
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./docker/initdb:/docker-entrypoint-initdb.d:ro
@@ -29,8 +29,12 @@ services:
       WEB_URL: http://localhost:8080
       HOLD_TTL_SECONDS: ${HOLD_TTL_SECONDS:-300}
       PAYMENT_GRACE_SECONDS: ${PAYMENT_GRACE_SECONDS:-120}
+      RATE_LIMITS_ENABLED: ${RATE_LIMITS_ENABLED:-true}
+      # Trust X-Forwarded-For from nginx so rate limits see the real client address.
+      # Safe because port 8000 is published on 127.0.0.1 only.
+      FORWARDED_ALLOW_IPS: "*"
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8000:8000"
     depends_on:
       db:
         condition: service_healthy
@@ -42,7 +46,7 @@ services:
       FAKEPAY_WEBHOOK_SECRET: ${FAKEPAY_WEBHOOK_SECRET:-whsec_dev_change_me}
       FAKEPAY_PUBLIC_URL: http://localhost:8001
     ports:
-      - "8001:8001"
+      - "127.0.0.1:8001:8001"
 
   web:
     build: ./web
