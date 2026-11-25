@@ -97,6 +97,21 @@ async def set_hold(pool: asyncpg.Pool, trip_id: int, session_id: str, seats: lis
         raise AppError(422, "too_many_seats",
                        f"You can hold at most {settings.max_seats_per_hold} seats")
 
+    if desired:
+        # Fast path for hot trips: if a wanted seat is already visibly taken by another
+        # session, say so without queueing for row locks. Only a "free-looking" request
+        # goes on to the locking path below, which makes the final, authoritative check.
+        taken = await pool.fetch(
+            """SELECT s.seat_no FROM trip_seats s LEFT JOIN holds h ON h.id = s.hold_id
+               WHERE s.trip_id = $1 AND s.seat_no = ANY($2::text[])
+                 AND (s.status = 'booked'
+                      OR (s.status = 'held' AND s.held_until > now() AND h.session_id <> $3))""",
+            trip_id, desired, session_id,
+        )
+        if taken:
+            metrics.HOLD_REQUESTS.labels("conflict").inc()
+            raise SeatConflict(sorted(r["seat_no"] for r in taken))
+
     try:
         async with pool.acquire() as conn, conn.transaction():
             trip = await conn.fetchrow(
