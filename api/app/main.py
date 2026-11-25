@@ -7,6 +7,7 @@ from fastapi.responses import Response
 from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 
 from app import db
+from app.ratelimit import default_limiters
 from app.realtime import SeatHub
 from app.realtime import router as realtime_router
 from app.config import settings
@@ -23,6 +24,7 @@ def create_app(*, pool=None, provider=None) -> FastAPI:
     @asynccontextmanager
     async def lifespan(app: FastAPI):
         app.state.pool = pool or await db.create_pool(settings.database_url)
+        app.state.limiters = default_limiters()
         await db.migrate(app.state.pool)
         if settings.seed_demo_data:
             created = await ensure_demo_data(app.state.pool)

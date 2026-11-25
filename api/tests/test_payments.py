@@ -292,3 +292,12 @@ async def test_ticket_lookup_needs_matching_phone(client, provider, trip):
     pnr = (await hold_status(client, hold["id"]))["booking"]["pnr"]
     r = await client.get(f"/api/bookings/{pnr}", params={"phone": "01812345678"})
     assert r.status_code == 404
+
+
+async def test_ticket_lookup_is_rate_limited(client, monkeypatch):
+    from app.config import settings
+    monkeypatch.setattr(settings, "rate_limits_enabled", True)
+    codes = [(await client.get("/api/bookings/ASXXXXXX", params={"phone": "01712345678"})).status_code
+             for _ in range(12)]
+    assert codes[:10] == [404] * 10
+    assert codes[10] == 429

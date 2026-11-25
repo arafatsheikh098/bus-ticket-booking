@@ -23,6 +23,7 @@ class Settings(BaseSettings):
     sweeper_interval_seconds: float = 2.0
     run_background_tasks: bool = True
     seed_demo_data: bool = True
+    rate_limits_enabled: bool = True
 
 
 settings = Settings()

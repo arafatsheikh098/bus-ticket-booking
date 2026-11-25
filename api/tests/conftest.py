@@ -24,6 +24,7 @@ def test_settings(monkeypatch):
     monkeypatch.setattr(settings, "database_url", TEST_DB)
     monkeypatch.setattr(settings, "run_background_tasks", False)
     monkeypatch.setattr(settings, "seed_demo_data", False)
+    monkeypatch.setattr(settings, "rate_limits_enabled", False)
     monkeypatch.setattr(settings, "hold_ttl_seconds", 300)
     monkeypatch.setattr(settings, "payment_grace_seconds", 120)
     monkeypatch.setattr(settings, "fakepay_webhook_secret", "whsec_test")

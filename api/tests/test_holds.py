@@ -116,3 +116,21 @@ async def test_release_endpoint(client, trip):
     assert (await client.delete(f"/api/holds/{hold['id']}", headers=session("b"))).status_code == 404
     assert (await client.delete(f"/api/holds/{hold['id']}", headers=session("a"))).status_code == 204
     assert (await seat_states(client, trip["id"]))["I1"] == "available"
+
+
+async def test_seat_names_are_length_limited(client, trip):
+    r = await client.put(f"/api/trips/{trip['id']}/hold", json={"seats": ["A" * 500]},
+                         headers=session("a"))
+    assert r.status_code == 422
+
+
+async def test_seat_clicks_are_rate_limited_per_session(client, trip, monkeypatch):
+    from app.config import settings
+    monkeypatch.setattr(settings, "rate_limits_enabled", True)
+    url, h = f"/api/trips/{trip['id']}/hold", session("spammer")
+    codes = [(await client.put(url, json={"seats": ["A1"]}, headers=h)).status_code
+             for _ in range(25)]
+    assert codes[:20] == [200] * 20
+    assert 429 in codes[20:]
+    # Another session is unaffected.
+    assert (await client.put(url, json={"seats": ["A2"]}, headers=session("other"))).status_code == 200

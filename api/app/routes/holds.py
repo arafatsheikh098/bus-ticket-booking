@@ -2,19 +2,23 @@ from uuid import UUID
 
 import asyncpg
 from fastapi import APIRouter, Depends, Response
-from pydantic import BaseModel, Field
+from typing import Annotated
+
+from pydantic import BaseModel, Field, StringConstraints
 
 from app.deps import get_pool, get_session
+from app.ratelimit import limit
 from app.services import holds
 
 router = APIRouter(prefix="/api", tags=["holds"])
 
 
 class HoldRequest(BaseModel):
-    seats: list[str] = Field(default_factory=list, max_length=40)
+    seats: list[Annotated[str, StringConstraints(min_length=1, max_length=4)]] = Field(
+        default_factory=list, max_length=10)
 
 
-@router.put("/trips/{trip_id}/hold")
+@router.put("/trips/{trip_id}/hold", dependencies=[limit("hold:session", "hold:ip")])
 async def set_hold(trip_id: int, body: HoldRequest, response: Response,
                    session: str = Depends(get_session), pool: asyncpg.Pool = Depends(get_pool)):
     """Set this session's held seats on a trip to exactly `seats`. An empty list releases."""
