@@ -234,6 +234,7 @@ async def health():
 PAGE = """<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:,">
 <title>FakePay sandbox checkout</title>
 <style>
   :root {{ color-scheme: light dark; --bg:#f4f1ea; --card:#fffdf8; --ink:#1d1b16; --muted:#6b6457;
@@ -256,7 +257,7 @@ PAGE = """<!doctype html>
   dt {{ color:var(--muted) }} dd {{ margin:0; text-align:right; font-family:ui-monospace, monospace;
        overflow-wrap:anywhere }}
   .actions {{ display:grid; gap:10px }}
-  button {{ font:600 16px/1 inherit; padding:15px; border-radius:10px; cursor:pointer;
+  button {{ font:inherit; font-size:16px; font-weight:600; line-height:1; padding:15px; border-radius:10px; cursor:pointer;
            border:1px solid transparent }}
   .pay {{ background:var(--pay); color:var(--card) }}
   .decline {{ background:transparent; color:var(--decline); border-color:var(--line) }}
