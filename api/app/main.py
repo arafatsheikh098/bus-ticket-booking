@@ -7,6 +7,8 @@ from fastapi.responses import Response
 from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 
 from app import db
+from app.realtime import SeatHub
+from app.realtime import router as realtime_router
 from app.config import settings
 from app.errors import AppError, app_error_handler
 from app.routes import holds, trips
@@ -24,6 +26,8 @@ def create_app(*, pool=None) -> FastAPI:
         if settings.seed_demo_data:
             created = await ensure_demo_data(app.state.pool)
             log.info("seeded %d trips", created)
+        app.state.hub = SeatHub(settings.database_url)
+        await app.state.hub.start()
         tasks = []
         if settings.run_background_tasks:
             tasks.append(asyncio.create_task(run_sweeper(app.state.pool)))
@@ -33,6 +37,7 @@ def create_app(*, pool=None) -> FastAPI:
             for task in tasks:
                 task.cancel()
             await asyncio.gather(*tasks, return_exceptions=True)
+            await app.state.hub.stop()
             if pool is None:
                 await app.state.pool.close()
 
@@ -40,6 +45,7 @@ def create_app(*, pool=None) -> FastAPI:
     app.add_exception_handler(AppError, app_error_handler)
     app.include_router(trips.router)
     app.include_router(holds.router)
+    app.include_router(realtime_router)
 
     @app.get("/api/health")
     async def health():
