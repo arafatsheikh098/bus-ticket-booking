@@ -131,6 +131,14 @@ async def set_hold(pool: asyncpg.Pool, trip_id: int, session_id: str, seats: lis
                                seats=unknown)
             taken = [s for s in desired if not seat_is_free_for(locked[s], hold_id)]
             if taken:
+                holders = list({locked[s]["hold_id"] for s in taken if locked[s]["hold_id"]})
+                if hold is None and holders and await conn.fetchval(
+                    "SELECT EXISTS (SELECT 1 FROM holds WHERE id = ANY($1::uuid[]) "
+                    "AND session_id = $2)", holders, session_id,
+                ):
+                    # Our own parallel request (a double click) got there first.
+                    raise AppError(409, "concurrent_request",
+                                   "Another request is already updating your seats")
                 metrics.HOLD_REQUESTS.labels("conflict").inc()
                 raise SeatConflict(taken)
 
