@@ -1,0 +1,6 @@
+fastapi==0.118.*
+uvicorn[standard]==0.37.*
+asyncpg==0.30.*
+httpx==0.28.*
+pydantic-settings==2.11.*
+prometheus-client==0.23.*
