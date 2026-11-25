@@ -1,4 +1,4 @@
-# Aashon · আসন
+# Bus Ticket Booking
 
 Intercity bus ticket booking for Bangladesh, built around one hard problem: **two people
 click the same seat at the same moment, and exactly one of them gets it.**
@@ -41,6 +41,7 @@ twice or keeps money for a seat you did not get.
 | Lost webhooks | Reconciliation asks the provider directly once a hold's deadline passes, and cancels unpaid payments before releasing the seats. |
 | Money arriving after the seat was resold | The payment is refunded automatically, with an idempotency key so a retry can never refund twice. |
 | Provider down during checkout | Checkout can be retried safely: the same idempotency key returns the same payment, never a second one. |
+| Scripts and guessing | Token-bucket rate limits: seat clicks per session and per IP, checkout per session, and ticket lookups per IP so PNRs can't be brute-forced. |
 | Slow browser on a bad connection | Each viewer has a bounded queue. If it falls behind, its backlog is dropped and it gets one fresh snapshot instead. |
 
 The reasoning behind each decision, and the trade-offs, are in [docs/DESIGN.md](docs/DESIGN.md).
@@ -131,7 +132,7 @@ Some users decline, and some pay after their hold has run out while a rival take
 seat.
 
 ```bash
-HOLD_TTL_SECONDS=20 PAYMENT_GRACE_SECONDS=10 docker compose up -d --build
+HOLD_TTL_SECONDS=20 PAYMENT_GRACE_SECONDS=10 RATE_LIMITS_ENABLED=false docker compose up -d --build
 api/.venv/bin/python loadtest/race.py --users 400
 ```
 
@@ -139,26 +140,27 @@ Result on an M2 Pro laptop, everything in Docker Desktop:
 
 ```
 Phase 1: race for seats
-  requests        400 in 1.46s (273 req/s)
-  responses       {200: 22, 409: 378}
-  latency ms      p50 796  p95 1445  p99 1521
-  seats held      25 by 22 users, duplicates: 0
+  requests        400 in 2.45s (164 req/s)
+  responses       {200: 24, 409: 376}
+  latency ms      p50 1200  p95 2135  p99 2307
+  seats held      28 by 24 users, duplicates: 0
 
 Phase 3: settled
-     13  hold confirmed  payment succeeded
-      5  hold failed     payment failed
-      3  hold expired    payment cancelled
+     18  hold confirmed  payment succeeded
+      4  hold expired    payment cancelled
+      1  hold failed     payment failed
       1  hold failed     payment refunded      <- paid after the seat was resold
 
 Verification
-  webhook deliveries sent 123, dropped 15, unique events processed 40
+  webhook deliveries sent 30, dropped 7, unique events processed 18
   seats sold twice                0
   payment/booking mismatches      0
-  money charged vs tickets sold   ৳16,500 vs ৳16,500
+  money charged vs tickets sold   ৳23,100 vs ৳23,100
 RESULT: PASS
 ```
 
-The latency is for the worst case on purpose: hundreds of people fighting over the same 25
+Rate limits are switched off for this test, because all 400 users come from one IP
+address. The latency is for the worst case on purpose: hundreds of people fighting over the same 25
 seats, so most requests wait their turn for the same few rows.
 
 ## Limits and next steps
@@ -171,8 +173,10 @@ seats, so most requests wait their turn for the same few rows.
   be partitioned across databases by route, since a booking never spans two trips.
 - **Client clock for the countdown.** The timer uses the browser clock, so a badly wrong
   clock shows the wrong time left. The server's deadline is still what counts.
-- **No per-user rate limit yet.** A script could keep re-holding seats. A token bucket per
-  session and per IP would stop that.
+- **Rate limits are per process.** Each API instance counts on its own. With several
+  instances, a shared limit would move to Redis or the API gateway.
+- **Ticket cancellation needs only the PNR and phone number.** Lookups are rate limited per
+  IP to stop guessing, but a real system would confirm with an SMS code.
 - **Cancellation fees.** Refunds are always in full. Real operators deduct a fee that
   depends on how close departure is.
 

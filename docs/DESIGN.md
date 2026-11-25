@@ -1,6 +1,6 @@
 # Design notes
 
-Why Aashon is built the way it is, written as answers to the questions an interviewer
+Why this project is built the way it is, written as answers to the questions an interviewer
 would ask. File references point at the code that implements each idea.
 
 ## 1. Data model
@@ -197,10 +197,27 @@ then seats. This is the same deadlock rule as for seats, applied across tables.
 The load test checks the same properties after 400 concurrent users and a chaotic
 provider, and also checks that money charged equals the value of tickets sold, to the taka.
 
-## 7. Things I would change for production
+## 7. Security
 
-- **Phone OTP sign-in** instead of guest sessions, plus per-user and per-IP rate limits on
-  holds, so nobody can script-hold a whole bus.
+- **Rate limits** (`api/app/ratelimit.py`) use token buckets: seat clicks per session and
+  per IP (a script can make up session ids, but not IP addresses), checkout per session,
+  and ticket lookup and cancellation per IP. A PNR is 6 characters from a 31-letter
+  alphabet, and the IP limit makes guessing one alongside a phone number impractical.
+- **Input limits.** Seat names are at most 4 characters, a request holds at most 10 seats,
+  and nginx rejects bodies over 64 KB.
+- **Webhooks** are HMAC-signed with a timestamp and compared in constant time. Even a valid
+  webhook is never trusted on its own (see section 5).
+- **Browser.** A strict Content-Security-Policy allows no inline scripts and no third-party
+  sources. That is why the pre-paint theme script lives in its own file. React escapes all
+  output.
+- **Infrastructure.** Postgres, the API and FakePay are published on 127.0.0.1 only;
+  the public entry point is nginx. Containers run as non-root users.
+- **Dependencies** are checked with `pip-audit` and `npm audit`, and the code with `bandit`.
+
+## 8. Things I would change for production
+
+- **Phone OTP sign-in** instead of guest sessions, and an SMS code before cancelling a
+  ticket. Rate limits per account would then replace today's limits per session and IP.
 - **An outbox table** for refunds and notifications (SMS ticket), processed by a worker,
   instead of calling the provider straight after commit and relying on the sweeper to
   retry.
@@ -208,6 +225,6 @@ provider, and also checks that money charged equals the value of tickets sold, t
   across database shards by route or date, with no cross-shard transactions.
 - **Server time on hold responses,** so the countdown is right even when the user's
   clock is wrong.
-- **Watch the queue.** If Prometheus shows `aashon_hold_requests_total{result="conflict"}`
+- **Watch the queue.** If Prometheus shows `busticket_hold_requests_total{result="conflict"}`
   spiking, a waiting-room page in front of a hot trip is better than letting thousands of
   requests queue on the same rows.
