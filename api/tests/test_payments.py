@@ -7,7 +7,7 @@ from app.services.provider import WebhookSignatureError, verify_signature
 from tests.conftest import expire_hold, session, signed_webhook
 from tests.fakepay_sign import sign
 
-PASSENGER = {"name": "Arafat Sheikh", "phone": "01712345678"}
+PASSENGER = {"name": "Rahim Uddin", "phone": "01712345678"}
 
 
 async def hold_and_checkout(client, trip, seats, who="a"):
