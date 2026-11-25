@@ -1,7 +1,10 @@
 import { Link, NavLink, Route, Routes } from "react-router-dom";
+import BookingStatus from "./pages/BookingStatus";
 import Home from "./pages/Home";
 import NotFound from "./pages/NotFound";
 import Results from "./pages/Results";
+import Ticket from "./pages/Ticket";
+import TripPage from "./pages/TripPage";
 
 export default function App() {
   return (
@@ -20,6 +23,9 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/search" element={<Results />} />
+          <Route path="/trip/:tripId" element={<TripPage />} />
+          <Route path="/booking/:holdId" element={<BookingStatus />} />
+          <Route path="/ticket" element={<Ticket />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
