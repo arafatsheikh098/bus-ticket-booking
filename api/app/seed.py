@@ -72,7 +72,7 @@ def seats_in(layout: list[list[str | None]]) -> list[str]:
 
 def _pnr() -> str:
     alphabet = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"
-    return "AS" + "".join(secrets.choice(alphabet) for _ in range(6))
+    return "BT" + "".join(secrets.choice(alphabet) for _ in range(6))
 
 
 async def seed_reference_data(conn: asyncpg.Connection) -> None:

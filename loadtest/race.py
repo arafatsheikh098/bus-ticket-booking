@@ -9,7 +9,7 @@ Phase 3: wait for everything to settle (including reconciliation of lost webhook
 
 Run against the docker compose stack with short timers so reconciliation is quick:
 
-    HOLD_TTL_SECONDS=20 PAYMENT_GRACE_SECONDS=10 docker compose up -d --build
+    HOLD_TTL_SECONDS=20 PAYMENT_GRACE_SECONDS=10 RATE_LIMITS_ENABLED=false docker compose up -d --build
     python loadtest/race.py --users 400
 """
 
@@ -25,7 +25,7 @@ import httpx
 
 API = "http://localhost:8000"
 FAKEPAY = "http://localhost:8001"
-DB = "postgresql://aashon:aashon@localhost:5433/aashon"
+DB = "postgresql://busticket:busticket@localhost:5433/busticket"
 FAKEPAY_KEY = "sk_test_dev_change_me"
 
 

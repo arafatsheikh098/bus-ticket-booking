@@ -287,7 +287,7 @@ async def checkout_page(pid: str):
           <button class="decline" name="action" value="failed">Decline payment</button></form>"""
     else:
         body = f'<p class="done">This payment is {html.escape(payment["status"])}.</p>'
-    return PAGE.format(merchant="Aashon", amount=f"{payment['amount']:,}",
+    return PAGE.format(merchant="Bus Ticket Booking", amount=f"{payment['amount']:,}",
                        description=html.escape(payment["description"] or payment["reference"]),
                        pid=html.escape(pid), body=body)
 

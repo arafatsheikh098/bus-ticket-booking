@@ -11,9 +11,9 @@ export default function App() {
   return (
     <div className="shell">
       <header className="topbar">
-        <Link to="/" className="brand" aria-label="Aashon home">
-          <span className="brand-mark" aria-hidden="true">আ</span>
-          <span className="brand-name">Aashon</span>
+        <Link to="/" className="brand" aria-label="Bus Ticket Booking home">
+          <span className="brand-mark" aria-hidden="true">B</span>
+          <span className="brand-name">Bus Ticket Booking</span>
         </Link>
         <nav className="topnav">
           <NavLink to="/" end>Find buses</NavLink>

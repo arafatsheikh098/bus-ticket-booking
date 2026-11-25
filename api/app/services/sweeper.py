@@ -14,7 +14,7 @@ from app.config import settings
 from app.seed import ensure_demo_data
 from app.services import holds, payments
 
-log = logging.getLogger("aashon.sweeper")
+log = logging.getLogger("busticket.sweeper")
 _SWEEPER_LOCK = 727_003
 _RESEED_EVERY_SECONDS = 3600
 

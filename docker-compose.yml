@@ -1,19 +1,19 @@
-name: aashon
+name: bus-ticket-booking
 
 services:
   db:
     image: postgres:17-alpine
     environment:
-      POSTGRES_USER: aashon
-      POSTGRES_PASSWORD: aashon
-      POSTGRES_DB: aashon
+      POSTGRES_USER: busticket
+      POSTGRES_PASSWORD: busticket
+      POSTGRES_DB: busticket
     ports:
       - "127.0.0.1:5433:5432"   # Only this machine can reach the database.
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./docker/initdb:/docker-entrypoint-initdb.d:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U aashon"]
+      test: ["CMD-SHELL", "pg_isready -U busticket"]
       interval: 2s
       timeout: 3s
       retries: 30
@@ -21,7 +21,7 @@ services:
   api:
     build: ./api
     environment:
-      DATABASE_URL: postgresql://aashon:aashon@db:5432/aashon
+      DATABASE_URL: postgresql://busticket:busticket@db:5432/busticket
       FAKEPAY_URL: http://fakepay:8001
       FAKEPAY_API_KEY: ${FAKEPAY_API_KEY:-sk_test_dev_change_me}
       FAKEPAY_WEBHOOK_SECRET: ${FAKEPAY_WEBHOOK_SECRET:-whsec_dev_change_me}

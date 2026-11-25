@@ -12,12 +12,12 @@ jobs:
       postgres:
         image: postgres:17-alpine
         env:
-          POSTGRES_USER: aashon
-          POSTGRES_PASSWORD: aashon
-          POSTGRES_DB: aashon_test
+          POSTGRES_USER: busticket
+          POSTGRES_PASSWORD: busticket
+          POSTGRES_DB: busticket_test
         ports: ["5433:5432"]
         options: >-
-          --health-cmd "pg_isready -U aashon"
+          --health-cmd "pg_isready -U busticket"
           --health-interval 2s --health-timeout 3s --health-retries 30
     defaults:
       run:
@@ -32,7 +32,7 @@ jobs:
       - run: pip install -r requirements-dev.txt
       - run: pytest -q
         env:
-          TEST_DATABASE_URL: postgresql://aashon:aashon@localhost:5433/aashon_test
+          TEST_DATABASE_URL: postgresql://busticket:busticket@localhost:5433/busticket_test
 
   web:
     runs-on: ubuntu-latest

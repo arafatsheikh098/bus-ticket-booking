@@ -60,7 +60,7 @@ export class ApiError extends Error {
   }
 }
 
-const SESSION_KEY = "aashon.session";
+const SESSION_KEY = "busticket.session";
 
 export function sessionId(): string {
   let id = localStorage.getItem(SESSION_KEY);

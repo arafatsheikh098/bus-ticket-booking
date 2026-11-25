@@ -18,7 +18,7 @@ from app import metrics
 from app.events import SEAT_CHANNEL
 from app.services.trips import seat_snapshot
 
-log = logging.getLogger("aashon.realtime")
+log = logging.getLogger("busticket.realtime")
 
 RESYNC = object()  # Marker telling a client loop to send a fresh full snapshot.
 

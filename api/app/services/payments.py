@@ -28,7 +28,7 @@ from app.services.provider import (
     ProviderError, ProviderRejected, WebhookSignatureError, verify_signature,
 )
 
-log = logging.getLogger("aashon.payments")
+log = logging.getLogger("busticket.payments")
 
 PHONE_RE = re.compile(r"^01[3-9]\d{8}$")
 PNR_ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"
@@ -128,7 +128,7 @@ async def start_checkout(pool: asyncpg.Pool, provider, hold_id, session_id: str,
 
 async def _insert_booking(conn: asyncpg.Connection, hold: asyncpg.Record, amount: int):
     for _ in range(5):
-        pnr = "AS" + "".join(secrets.choice(PNR_ALPHABET) for _ in range(6))
+        pnr = "BT" + "".join(secrets.choice(PNR_ALPHABET) for _ in range(6))
         try:
             async with conn.transaction():  # Savepoint, so a PNR clash can be retried.
                 return await conn.fetchrow(

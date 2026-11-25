@@ -27,7 +27,7 @@ export default function BookingStatus() {
         const refundSettling = h.payment?.status === "refund_pending";
         if (TERMINAL.has(h.status) && !refundSettling) {
           if (h.booking) {
-            const phone = localStorage.getItem(`aashon.hold.${holdId}`) ?? localStorage.getItem("aashon.phone") ?? "";
+            const phone = localStorage.getItem(`busticket.hold.${holdId}`) ?? localStorage.getItem("busticket.phone") ?? "";
             api.booking(h.booking.pnr, phone).then(setBooking).catch(() => {});
           }
           return;

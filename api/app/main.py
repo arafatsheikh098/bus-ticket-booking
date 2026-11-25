@@ -17,7 +17,7 @@ from app.seed import ensure_demo_data
 from app.services.provider import FakePayClient
 from app.services.sweeper import run_sweeper
 
-log = logging.getLogger("aashon")
+log = logging.getLogger("busticket")
 
 
 def create_app(*, pool=None, provider=None) -> FastAPI:
@@ -49,7 +49,7 @@ def create_app(*, pool=None, provider=None) -> FastAPI:
             if pool is None:
                 await app.state.pool.close()
 
-    app = FastAPI(title="Aashon API", version="1.0.0", lifespan=lifespan)
+    app = FastAPI(title="Bus Ticket Booking API", version="1.0.0", lifespan=lifespan)
     app.add_exception_handler(AppError, app_error_handler)
     app.include_router(trips.router)
     app.include_router(holds.router)

@@ -1,6 +1,6 @@
 export type Theme = "system" | "light" | "dark";
 
-const KEY = "aashon.theme";
+const KEY = "busticket.theme";
 
 export function storedTheme(): Theme {
   const t = localStorage.getItem(KEY);

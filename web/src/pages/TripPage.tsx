@@ -7,7 +7,7 @@ import { COACH_LABEL, dhakaYmd, duration, formatLongDay, formatTime, taka } from
 import { useTripSeats } from "../useTripSeats";
 
 const MAX_SEATS = 4;
-const PHONE_KEY = "aashon.phone";
+const PHONE_KEY = "busticket.phone";
 
 export default function TripPage() {
   const tripId = Number(useParams().tripId);
@@ -160,7 +160,7 @@ function PassengerForm({ hold, onError }: { hold: Hold | null; onError: (t: stri
     try {
       const { checkout_url } = await api.checkout(hold.id, name, phone);
       localStorage.setItem(PHONE_KEY, phone);
-      localStorage.setItem(`aashon.hold.${hold.id}`, phone);
+      localStorage.setItem(`busticket.hold.${hold.id}`, phone);
       window.location.assign(checkout_url);
     } catch (err) {
       onError(err instanceof Error ? err.message : "Could not start payment");

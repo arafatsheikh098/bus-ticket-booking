@@ -5,7 +5,7 @@ import { taka } from "../format";
 
 export default function Ticket() {
   const [pnr, setPnr] = useState("");
-  const [phone, setPhone] = useState(() => localStorage.getItem("aashon.phone") ?? "");
+  const [phone, setPhone] = useState(() => localStorage.getItem("busticket.phone") ?? "");
   const [booking, setBooking] = useState<Booking | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -36,7 +36,7 @@ export default function Ticket() {
       <form className="lookup" onSubmit={find}>
         <label className="field">
           <span>PNR</span>
-          <input value={pnr} onChange={(e) => setPnr(e.target.value.toUpperCase())} placeholder="AS7K2M9Q"
+          <input value={pnr} onChange={(e) => setPnr(e.target.value.toUpperCase())} placeholder="BT7K2M9Q"
                  required autoCapitalize="characters" spellCheck={false} />
         </label>
         <label className="field">

@@ -4,7 +4,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
-    database_url: str = "postgresql://aashon:aashon@localhost:5433/aashon"
+    database_url: str = "postgresql://busticket:busticket@localhost:5433/busticket"
 
     # How long a seat hold lives before it is released automatically.
     hold_ttl_seconds: int = 300

@@ -15,7 +15,7 @@ from tests.invariants import check_invariants
 from tests.stub_provider import StubProvider
 
 TEST_DB = os.environ.get("TEST_DATABASE_URL",
-                         "postgresql://aashon:aashon@localhost:5433/aashon_test")
+                         "postgresql://busticket:busticket@localhost:5433/busticket_test")
 _schema_ready = False
 
 
