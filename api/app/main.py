@@ -11,14 +11,15 @@ from app.realtime import SeatHub
 from app.realtime import router as realtime_router
 from app.config import settings
 from app.errors import AppError, app_error_handler
-from app.routes import holds, trips
+from app.routes import bookings, holds, trips
 from app.seed import ensure_demo_data
+from app.services.provider import FakePayClient
 from app.services.sweeper import run_sweeper
 
 log = logging.getLogger("aashon")
 
 
-def create_app(*, pool=None) -> FastAPI:
+def create_app(*, pool=None, provider=None) -> FastAPI:
     @asynccontextmanager
     async def lifespan(app: FastAPI):
         app.state.pool = pool or await db.create_pool(settings.database_url)
@@ -26,11 +27,14 @@ def create_app(*, pool=None) -> FastAPI:
         if settings.seed_demo_data:
             created = await ensure_demo_data(app.state.pool)
             log.info("seeded %d trips", created)
+        app.state.provider = provider or FakePayClient(
+            settings.fakepay_url, settings.fakepay_api_key
+        )
         app.state.hub = SeatHub(settings.database_url)
         await app.state.hub.start()
         tasks = []
         if settings.run_background_tasks:
-            tasks.append(asyncio.create_task(run_sweeper(app.state.pool)))
+            tasks.append(asyncio.create_task(run_sweeper(app.state.pool, app.state.provider)))
         try:
             yield
         finally:
@@ -38,6 +42,8 @@ def create_app(*, pool=None) -> FastAPI:
                 task.cancel()
             await asyncio.gather(*tasks, return_exceptions=True)
             await app.state.hub.stop()
+            if provider is None:
+                await app.state.provider.aclose()
             if pool is None:
                 await app.state.pool.close()
 
@@ -46,6 +52,7 @@ def create_app(*, pool=None) -> FastAPI:
     app.include_router(trips.router)
     app.include_router(holds.router)
     app.include_router(realtime_router)
+    app.include_router(bookings.router)
 
     @app.get("/api/health")
     async def health():

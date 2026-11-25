@@ -10,15 +10,18 @@ import logging
 import asyncpg
 
 from app.config import settings
-from app.services import holds
+from app.services import holds, payments
 
 log = logging.getLogger("aashon.sweeper")
 _SWEEPER_LOCK = 727_003
 
 
 async def sweep_once(pool: asyncpg.Pool, provider=None) -> dict:
-    expired = await holds.expire_lapsed_holds(pool)
-    return {"expired": expired}
+    result = {"expired": await holds.expire_lapsed_holds(pool)}
+    if provider is not None:
+        result["reconciled"] = await payments.reconcile_overdue(pool, provider)
+        result["refunded"] = await payments.retry_refunds(pool, provider)
+    return result
 
 
 async def run_sweeper(pool: asyncpg.Pool, provider=None) -> None:
