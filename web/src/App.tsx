@@ -1,4 +1,5 @@
 import { Link, NavLink, Route, Routes } from "react-router-dom";
+import ThemeToggle from "./components/ThemeToggle";
 import BookingStatus from "./pages/BookingStatus";
 import Home from "./pages/Home";
 import NotFound from "./pages/NotFound";
@@ -17,6 +18,7 @@ export default function App() {
         <nav className="topnav">
           <NavLink to="/" end>Find buses</NavLink>
           <NavLink to="/ticket">My ticket</NavLink>
+          <ThemeToggle />
         </nav>
       </header>
       <main className="page">

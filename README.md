@@ -24,6 +24,8 @@ twice or keeps money for a seat you did not get.
 - **Checkout** on FakePay, a sandbox payment provider included in this repo.
 - **Tickets** with a PNR, lookup by PNR and phone number, and cancellation with refund up to
   two hours before departure.
+- **Light and dark themes.** A switch in the header picks light, dark, or your system
+  setting. The choice is remembered and applied before the page draws, so it never flashes.
 
 ## The interesting parts
 
@@ -61,7 +63,7 @@ flowchart LR
 |---|---|
 | `api/` | Python 3.13, FastAPI, asyncpg, raw SQL, Prometheus metrics |
 | `fakepay/` | FastAPI app that behaves like a hosted-checkout provider, with chaos settings |
-| `web/` | React 19, TypeScript, Vite, plain CSS, light and dark themes |
+| `web/` | React 19, TypeScript, Vite, plain CSS with light, dark and system themes |
 | `loadtest/` | asyncio + httpx race and chaos test |
 | Infra | Docker Compose, nginx (WebSocket proxy), GitHub Actions |
 

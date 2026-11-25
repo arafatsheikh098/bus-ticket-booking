@@ -1,22 +1,27 @@
 :root {
+  /* Each colour has a light and a dark value. Which one applies follows color-scheme:
+     the system setting by default, or the user's choice from the theme switch. */
   color-scheme: light dark;
-  --bg: #f5f3ee;
-  --card: #ffffff;
-  --ink: #17201c;
-  --muted: #5b6862;
-  --line: #e2ded5;
-  --line-strong: #cfc9bc;
-  --green: #0b5d45;
-  --green-ink: #ffffff;
-  --green-soft: #e1f0e9;
-  --green-hover: #094c39;
-  --red: #c8372d;
-  --red-soft: #fbe6e3;
-  --amber: #c98a12;
-  --amber-soft: #fbefd6;
-  --booked: #d9d5cc;
-  --booked-ink: #8c8678;
-  --shadow: 0 1px 2px rgb(23 32 28 / 6%), 0 6px 24px rgb(23 32 28 / 6%);
+  --bg: light-dark(#f5f3ee, #0e1311);
+  --card: light-dark(#ffffff, #161d1a);
+  --ink: light-dark(#17201c, #e8eee9);
+  --muted: light-dark(#5b6862, #97a59e);
+  --line: light-dark(#e2ded5, #27312d);
+  --line-strong: light-dark(#cfc9bc, #36423d);
+  --green: light-dark(#0b5d45, #3dbb8b);
+  --green-ink: light-dark(#ffffff, #06261b);
+  --green-soft: light-dark(#e1f0e9, #173528);
+  --green-hover: light-dark(#094c39, #52cc9c);
+  --red: light-dark(#c8372d, #f07a6f);
+  --red-soft: light-dark(#fbe6e3, #3a1d1a);
+  --amber: light-dark(#c98a12, #e8b04a);
+  --amber-soft: light-dark(#fbefd6, #3a2d14);
+  --booked: light-dark(#d9d5cc, #2b3431);
+  --booked-ink: light-dark(#8c8678, #6f7d76);
+  --booked-fill: light-dark(#d9d5cc, transparent);
+  --booked-edge: light-dark(transparent, #2b3431);
+  --shadow-color: light-dark(rgb(23 32 28 / 6%), rgb(0 0 0 / 28%));
+  --shadow: 0 1px 2px var(--shadow-color), 0 6px 24px var(--shadow-color);
   --radius: 14px;
   --seat: 46px;
   font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", "Noto Sans Bengali", "Hind Siliguri", sans-serif;
@@ -26,28 +31,9 @@
   background: var(--bg);
   -webkit-font-smoothing: antialiased;
 }
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #0e1311;
-    --card: #161d1a;
-    --ink: #e8eee9;
-    --muted: #97a59e;
-    --line: #27312d;
-    --line-strong: #36423d;
-    --green: #3dbb8b;
-    --green-ink: #06261b;
-    --green-soft: #173528;
-    --green-hover: #52cc9c;
-    --red: #f07a6f;
-    --red-soft: #3a1d1a;
-    --amber: #e8b04a;
-    --amber-soft: #3a2d14;
-    --booked: #2b3431;
-    --booked-ink: #6f7d76;
-    --shadow: 0 1px 2px rgb(0 0 0 / 30%), 0 8px 28px rgb(0 0 0 / 25%);
-  }
-}
+:root[data-theme="light"] { color-scheme: light; }
+:root[data-theme="dark"] { color-scheme: dark; }
+.theme-switching, .theme-switching * { transition: none !important; }
 
 * { box-sizing: border-box; }
 body { margin: 0; }
@@ -81,7 +67,18 @@ button, input, select { font: inherit; color: inherit; }
   background: var(--red); right: -2px; top: -2px; border: 2px solid var(--bg);
 }
 .brand-name { font-weight: 700; letter-spacing: -0.02em; font-size: 1.15rem; }
-.topnav { display: flex; gap: 4px; }
+.topnav { display: flex; gap: 4px; align-items: center; }
+.theme-switch {
+  display: inline-flex; padding: 3px; gap: 2px; margin-left: 8px; border-radius: 10px;
+  border: 1px solid var(--line); background: var(--card);
+}
+.theme-switch button {
+  display: grid; place-items: center; width: 32px; height: 30px; border: 0; border-radius: 7px;
+  background: transparent; color: var(--muted); cursor: pointer;
+}
+.theme-switch button:hover { color: var(--ink); }
+.theme-switch button[aria-pressed="true"] { background: var(--green-soft); color: var(--green); }
+.theme-switch svg { width: 17px; height: 17px; }
 .topnav a {
   text-decoration: none; color: var(--muted); padding: 8px 12px; border-radius: 8px; font-weight: 500;
 }
@@ -258,10 +255,10 @@ button, input, select { font: inherit; color: inherit; }
   border-color: color-mix(in srgb, var(--amber) 55%, var(--line)); color: var(--amber); cursor: not-allowed;
 }
 .seat-booked {
-  background: var(--booked); border-color: transparent; color: var(--booked-ink); cursor: not-allowed;
+  background: var(--booked-fill); border-color: var(--booked-edge); border-style: dashed;
+  color: var(--booked-ink); cursor: not-allowed;
   text-decoration: line-through; text-decoration-thickness: 1px;
 }
-@media (prefers-color-scheme: dark) { .seat-booked { background: transparent; border-color: var(--booked); border-style: dashed; } }
 .seat-working { background: var(--green-soft); border-color: var(--green); color: var(--green); cursor: progress; animation: breathe 0.9s ease-in-out infinite alternate; }
 .seat:disabled.seat-available, .seat:disabled.seat-mine { cursor: not-allowed; opacity: 0.85; }
 .seat-pulse { animation: pulse 1.2s ease-out; }
@@ -344,7 +341,10 @@ button, input, select { font: inherit; color: inherit; }
   .search-go { justify-self: stretch; }
   .lookup { grid-template-columns: 1fr; }
   .ticket-grid { grid-template-columns: 1fr 1fr; }
-  .topnav a { padding: 8px; }
+  .topnav a { padding: 8px 6px; font-size: 0.92rem; }
+  .brand-name { display: none; }
+  .theme-switch { margin-left: 2px; }
+  .theme-switch button { width: 28px; }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
