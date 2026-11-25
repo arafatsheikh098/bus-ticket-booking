@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { api, type Booking } from "../api";
+import { api, ApiError, type Booking } from "../api";
 import TicketCard from "../components/TicketCard";
 import { taka } from "../format";
 
@@ -15,7 +15,10 @@ export default function Ticket() {
     e.preventDefault();
     setBusy(true); setError(null); setBooking(null); setConfirming(false);
     try { setBooking(await api.booking(pnr, phone)); }
-    catch (err) { setError(err instanceof Error && err.message.includes("not found") ? "No ticket matches that PNR and mobile number." : String(err)); }
+    catch (err) {
+      if (err instanceof ApiError && err.status === 404) setError("No ticket matches that PNR and mobile number.");
+      else setError(err instanceof Error ? err.message : "Something went wrong");
+    }
     finally { setBusy(false); }
   };
 

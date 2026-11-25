@@ -35,7 +35,7 @@ PNR_ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"
 # If the provider stays unreachable this long after a hold's deadline, release the seats
 # anyway. A payment that later turns out to have succeeded is booked if the seats are still
 # free, or refunded if they are not.
-PROVIDER_OUTAGE_CUTOFF = "10 minutes"
+PROVIDER_OUTAGE_CUTOFF_SECONDS = 600.0
 
 
 def normalize_phone(raw: str) -> str:
@@ -308,14 +308,14 @@ async def reconcile_overdue(pool: asyncpg.Pool, provider, limit: int = 50) -> in
     unresolved although their hold was already closed during a provider outage.
     """
     rows = await pool.fetch(
-        f"""SELECT h.id AS hold_id, p.id AS payment_id, p.provider_ref,
-                   h.expires_at <= now() - interval '{PROVIDER_OUTAGE_CUTOFF}' AS long_overdue
+        """SELECT h.id AS hold_id, p.id AS payment_id, p.provider_ref,
+                   h.expires_at <= now() - make_interval(secs => $2) AS long_overdue
             FROM holds h JOIN payments p ON p.hold_id = h.id
             WHERE p.status IN ('creating', 'pending')
               AND (h.expires_at <= now() OR h.status <> 'pending_payment')
             ORDER BY h.expires_at
             LIMIT $1""",
-        limit,
+        limit, PROVIDER_OUTAGE_CUTOFF_SECONDS,
     )
     settled = 0
     for row in rows:

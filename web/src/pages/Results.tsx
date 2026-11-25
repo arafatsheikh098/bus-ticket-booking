@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { api, type TripSummary } from "../api";
 import SearchForm from "../components/SearchForm";
-import { COACH_LABEL, dayIso, duration, formatLongDay, formatTime, taka } from "../format";
+import { COACH_LABEL, dayIso, dhakaDate, duration, formatLongDay, formatTime, taka } from "../format";
 
 type Filter = "all" | "ac" | "non_ac";
 type Sort = "time" | "fare" | "seats";
@@ -11,7 +11,7 @@ export default function Results() {
   const [params] = useSearchParams();
   const from = params.get("from") ?? "dhaka";
   const to = params.get("to") ?? "chattogram";
-  const date = params.get("date") ?? "";
+  const date = params.get("date") || dhakaDate(0);
   const [trips, setTrips] = useState<TripSummary[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<Filter>("all");
@@ -42,7 +42,7 @@ export default function Results() {
         <div className="results-head">
           <div>
             <h1>{routeName}</h1>
-            {date && <p className="muted">{formatLongDay(dayIso(date))}</p>}
+            <p className="muted">{formatLongDay(dayIso(date))}</p>
           </div>
           <div className="controls">
             <div className="seg" role="group" aria-label="Coach type">
